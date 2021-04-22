@@ -18,16 +18,16 @@ interface ConcurrencyTest extends TestedManagerProvider {
     @Test
     default void shouldHandleOperationsConcurrently() throws InterruptedException {
         //given
-        TaskManager taskManager = provideTaskManager(50000);
+        TaskManager taskManager = provideTaskManager(5000);
         ExecutorService executor = Executors.newFixedThreadPool(5);
 
         CountDownLatch latch = new CountDownLatch(5);
 
-        executor.submit(processesGenerator(0, 10000, taskManager, latch));
-        executor.submit(processesGenerator(10000, 20000, taskManager, latch));
-        executor.submit(processesGenerator(20000, 30000, taskManager, latch));
-        executor.submit(processesKiller(10000, 20000, taskManager, latch));
-        executor.submit(processesKiller(20000, 30000, taskManager, latch));
+        executor.submit(processesGenerator(0, 1000, taskManager, latch));
+        executor.submit(processesGenerator(1000, 2000, taskManager, latch));
+        executor.submit(processesGenerator(2000, 3000, taskManager, latch));
+        executor.submit(processesKiller(1000, 2000, taskManager, latch));
+        executor.submit(processesKiller(2000, 3000, taskManager, latch));
 
         //when
         latch.await();
@@ -35,8 +35,8 @@ interface ConcurrencyTest extends TestedManagerProvider {
 
         Assertions.assertThat(processes).map(Process::pid)
                 .allMatch(pid -> pid >= 0)
-                .allMatch(pid -> pid < 10000)
-                .containsExactlyInAnyOrderElementsOf(LongStream.range(0, 10000).boxed().collect(Collectors.toList()));
+                .allMatch(pid -> pid < 1000)
+                .containsExactlyInAnyOrderElementsOf(LongStream.range(0, 1000).boxed().collect(Collectors.toList()));
     }
 
     private Runnable processesGenerator(long from, long to, TaskManager manager, CountDownLatch latch) {
